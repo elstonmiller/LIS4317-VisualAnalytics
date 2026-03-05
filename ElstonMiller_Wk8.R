@@ -4,7 +4,8 @@ library(corrgram)
 library(reshape2)
 library(ggcorrplot)
 library(GGally)
-data <- tibble(read.csv("2010_2025_o100PA_League.csv"))
+data <- read.csv("2010_2025_o100PA_League.csv")
+data <- as_tibble(data)
 
 #Create perPA values & clean 
 data25 <- data %>% 
@@ -45,14 +46,17 @@ ggallyPlot <- ggpairs(cleanData)+
        subtitle = "2025 Season with at least 100 apperances")+
   theme_bw()
 
-# Linear Model 
+# Linear Model
+## Stardarzine data to percent units
 cleanData$K_pct <- cleanData$`K Rate`*100
 cleanData$H_pct <- cleanData$`Hits/PA`*100
 cleanData$Lg <- data25$Lg
 
+## Create Model
 model1 <- lm(formula = H_pct ~ K_pct, data = cleanData)
 summary(model1)
 
+## Plot 
 ggplot(cleanData, aes(K_pct, H_pct))+
   geom_point()+
   geom_smooth(method = "lm", se = TRUE)+
