@@ -9,12 +9,12 @@ library(lubridate)
 
 # Gather and clean data 
 
-fredr_set_key("Insert API key")
+fredr_set_key("apiKey")
 
 
 ## 10 yr treasury rates
 tenyr <- fredr(series_id = "DGS10",
-      observation_start = as.Date("1962-01-01"),
+      observation_start = as.Date("2020-03-01"),
       observation_end = as.Date("2026-02-01"),
       frequency = "m")
 tenyr <- tenyr %>% 
@@ -24,7 +24,7 @@ tenyr <- tenyr %>%
 ## unemployment rates
 unemployment <- fredr(
   series_id = "UNRATE",
-  observation_start = as.Date("1962-01-01"),
+  observation_start = as.Date("2020-03-01"),
   frequency = "m")
 unemployment <- unemployment %>% 
   select(-realtime_end,-realtime_start) %>%
@@ -32,7 +32,7 @@ unemployment <- unemployment %>%
 
 ## S&P 500
 snp500 <- tq_get("^GSPC",
-                 from = "1962-01-01",
+                 from = "2020-03-01",
                  to = "2026-02-03")
 ### Clean S&P data
 snp500 <- snp500 %>% 
@@ -60,30 +60,14 @@ df <- df %>%
 # Plot 
 ggplot(df, aes(TenYearYield, UnemploymentRt, color = change))+
   geom_point(alpha = 0.8)+
-  geom_smooth(method = "lm")+
+  geom_smooth(method = "loess")+
   scale_color_viridis_c(option = "E")+
-  labs(title = "S&P 500 Monthly Movement Against Unemployment Rate and Ten Year Yield",
-       subtitle = "Monthly Observations between Feb 1962 and Feb 2026",
+  labs(title = "S&P 500 Behavior Against Ten Year Yield and Unemployment Rate",
+       subtitle = "Monthly Observations between March 2020 and Feb 2026",
        y = "US Unemployment Rate",
        x = "10 Year U.S Tresury Yield",
        color = "S&P 500\nmonthly change")
 
-# Explore lagged data as well to see potential ripples felt by changes in unemployment and 10 year yield
-df <- df %>% 
-  mutate(
-    laggedtenyear = lag(TenYearYield),
-    laggedunemployment = lag(UnemploymentRt)
-)
-# Plot 
-ggplot(df, aes(laggedtenyear, laggedunemployment, color = change))+
-  geom_point(alpha = 0.8)+
-  geom_smooth(method = "lm")+
-  scale_color_viridis_c(option = "E")+
-  labs(title = "S&P 500 Lagged Monthly Movement Against Unemployment Rate and Ten Year Yield",
-       subtitle = "Monthly Observations between Feb 1962 and Feb 2026",
-       y = "US Unemployment Rate",
-       x = "10 Year U.S Tresury Yield",
-       color = "S&P 500 Lagged\nmonthly change")
 
 # Extra practice - time series with multiple variables
 rm(df,snp500,tenyr,unemployment)
